@@ -79,7 +79,8 @@ public class ExpressionsRepositoryImplTest {
                         Arrays.asList(new Task(null, "fix hr", ACTIVE), new Task(null, "fix hr", ACTIVE)),
                         UUID.fromString("2dfb7bc7-38a6-4826-b6d3-297969d17244"),
                         Lang.AR,
-                        Lang.AR
+                        Lang.AR,
+                        new Address("123 Main St", "cairo", new ContactInfo("123-456-7890", "ahmed@example.com"))
                 ),
                 new Employee(null,
                         "mohammad",
@@ -95,7 +96,8 @@ public class ExpressionsRepositoryImplTest {
                         Arrays.asList(new Task(null, "fix sw arch", ACTIVE), new Task(null, "fix sw arch", ACTIVE)),
                         UUID.randomUUID(),
                         Lang.AR,
-                        Lang.AR
+                        Lang.AR,
+                        new Address("456 King Rd", "riyadh", new ContactInfo("098-765-4321", "mohammad@example.com"))
                 ),
                 new Employee(null,
                         "mostafa",
@@ -111,7 +113,8 @@ public class ExpressionsRepositoryImplTest {
                         Arrays.asList(new Task(null, "fix sw dev", ACTIVE), new Task(null, "fix sw dev", ACTIVE)),
                         UUID.randomUUID(),
                         Lang.AR,
-                        Lang.AR
+                        Lang.AR,
+                        null
                 ),
                 new Employee(null,
                         "wael",
@@ -127,7 +130,8 @@ public class ExpressionsRepositoryImplTest {
                         Arrays.asList(new Task(null, "fix hr", ACTIVE), new Task(null, "fix hr", ACTIVE)),
                         UUID.randomUUID(),
                         Lang.AR,
-                        Lang.AR
+                        Lang.AR,
+                        null
                 ),
                 new Employee(null,
                         "farida",
@@ -143,7 +147,8 @@ public class ExpressionsRepositoryImplTest {
                         Arrays.asList(new Task(null, "fix hr", ACTIVE), new Task(null, "fix hr", NOT_ACTIVE)),
                         UUID.randomUUID(),
                         Lang.AR,
-                        Lang.AR
+                        Lang.AR,
+                        null
                 ),
                 new Employee(null,
                         "fofo",
@@ -159,7 +164,8 @@ public class ExpressionsRepositoryImplTest {
                         null,
                         UUID.randomUUID(),
                         Lang.EN,
-                        Lang.EN
+                        Lang.EN,
+                        null
                 )
         );
         employeeRepository.saveAll(allEmployees);
@@ -878,6 +884,40 @@ public class ExpressionsRepositoryImplTest {
             assertThat(emp.department.name).isIn("hr", "sw dev");
             assertThat(emp.age).isGreaterThanOrEqualTo(30);
         });
+    }
+
+    @Test
+    public void testNestedEmbeddable2Levels() throws Exception {
+        String json = loadResourceJsonFile("testNestedEmbeddable2Levels");
+
+        Expressions expressions = new ObjectMapper().readValue(json, Expressions.class);
+
+        List<Employee> employeeList = employeeRepository.findAll(expressions);
+        assertThat(employeeList).isNotNull();
+        assertThat(employeeList.size()).isEqualTo(1);
+        assertThat(employeeList.get(0).firstName).isEqualTo("ahmed");
+        assertThat(employeeList.get(0).address).isNotNull();
+        assertThat(employeeList.get(0).address.contactInfo).isNotNull();
+        assertThat(employeeList.get(0).address.contactInfo.phone).isEqualTo("123-456-7890");
+
+        // Expected SQL: select * from employee e where e.first_name=? and e.phone=?
+    }
+
+    @Test
+    public void testNestedEmbeddable2LevelsWithIn() throws Exception {
+        String json = loadResourceJsonFile("testNestedEmbeddable2LevelsWithIn");
+
+        Expressions expressions = new ObjectMapper().readValue(json, Expressions.class);
+
+        List<Employee> employeeList = employeeRepository.findAll(expressions);
+        assertThat(employeeList).isNotNull();
+        assertThat(employeeList.size()).isEqualTo(2);
+        assertThatList(employeeList).allSatisfy(emp -> {
+            assertThat(emp.address).isNotNull();
+            assertThat(emp.address.city).isIn("cairo", "riyadh");
+        });
+
+        // Expected SQL: select * from employee e where e.city in (?, ?)
     }
 
     @SneakyThrows

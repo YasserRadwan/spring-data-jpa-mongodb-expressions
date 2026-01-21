@@ -42,6 +42,8 @@ public class Employee extends Auditable {
     public Lang lang;
     @Enumerated(EnumType.ORDINAL)
     public Lang langCode;
+    @Embedded
+    public Address address;
 
     public enum Lang {AR, EN}
 }

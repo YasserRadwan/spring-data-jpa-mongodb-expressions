@@ -81,8 +81,18 @@ class ExpressionsPredicateBuilder {
 
                 if (PersistentAttributeType.EMBEDDED == attribute.getPersistentAttributeType()) {
                     final SubField subField = extractSubField(singularExpression.field);
-                    attribute = extractSubFieldType(attribute).getAttribute(subField.name);
-                    exprPath = exprPath.get((SingularAttribute) attribute);
+                    // Handle nested embeddables recursively
+                    String[] nestedFields = subField.name.split("\\.");
+                    ManagedType<?> currentType = extractSubFieldType(attribute);
+                    
+                    for (String nestedField : nestedFields) {
+                        attribute = currentType.getAttribute(nestedField);
+                        exprPath = exprPath.get((SingularAttribute) attribute);
+                        
+                        if (PersistentAttributeType.EMBEDDED == attribute.getPersistentAttributeType()) {
+                            currentType = extractSubFieldType(attribute);
+                        }
+                    }
                 }
 
                 Object attributeValue = convertValueToAttributeType(singularExpression.value, attribute.getJavaType());
@@ -199,8 +209,18 @@ class ExpressionsPredicateBuilder {
 
                 if (PersistentAttributeType.EMBEDDED == attribute.getPersistentAttributeType()) {
                     final SubField subField = extractSubField(listExpression.field);
-                    attribute = extractSubFieldType(attribute).getAttribute(subField.name);
-                    exprPath = exprPath.get((SingularAttribute) attribute);
+                    // Handle nested embeddables recursively
+                    String[] nestedFields = subField.name.split("\\.");
+                    ManagedType<?> currentType = extractSubFieldType(attribute);
+                    
+                    for (String nestedField : nestedFields) {
+                        attribute = currentType.getAttribute(nestedField);
+                        exprPath = exprPath.get((SingularAttribute) attribute);
+                        
+                        if (PersistentAttributeType.EMBEDDED == attribute.getPersistentAttributeType()) {
+                            currentType = extractSubFieldType(attribute);
+                        }
+                    }
                 }
 
                 List<Object> attributeValues = convertValueToAttributeType(listExpression.values, attribute.getJavaType());

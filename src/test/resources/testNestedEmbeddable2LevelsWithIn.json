@@ -1,0 +1,3 @@
+{
+  "address.city": {"$in": ["cairo", "riyadh"]}
+}

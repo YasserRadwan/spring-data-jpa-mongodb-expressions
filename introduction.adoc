@@ -1,0 +1,31 @@
+= Introduction
+include::include.adoc[]
+
+https://github.com/mhewedy/spring-data-jpa-mongodb-expressions[__Spring Data JPA MongoDB Expressions__,role=external,window=_blank] is a library that allows you to query Spring Data JPA Repositories using
+https://docs.mongodb.com/manual/tutorial/query-documents/[MongoDB Query Language,role=external,window=_blank]. +
+It parses (a subset of) MongoDB expressions __(which itself a initiative and easy to learn Language)__ and convert them to
+Spring Data JPA Specifications to be used with __Spring Data JPA__ Repositories.
+
+It is specially useful for so many JavaScript clients that like to build queries using convenient MongoDB expressions and
+send the query to the Spring-based API to be processed by the Repository.
+
+The idea is that you can build the _MongoDB_ query-like _JSON_ from the frontend app and pass it to the Spring Controller,
+and then optionally enrich it with additional conditions and pass it to the JPA Repository,
+in which the _MongoDB_ query will be translated automatically to JPA specification and executed.
+
+.How it works
+****
+__Spring Data JPA MongoDB Expressions__ converts the MongoDB queries into SQL queries. So the following MongoDB
+https://docs.mongodb.com/manual/tutorial/query-documents/#specify-and-conditions[query,role=external,window=_blank]:
+[source,json]
+----
+{ "status": "A", "qty": { "$lt": 30 } }
+----
+
+will be translated to.footnote:[This is rough SQL code, as usually values are passed parameterized in the where condition.]:
+[source,sql]
+----
+SELECT * FROM inventory WHERE status = "A" AND qty < 30
+----
+TIP: You can create MongoDB queries using simple javascript code see <<build_expressions.adoc#_how_to_build_the_expressions,How to Build the Expressions>>
+****
